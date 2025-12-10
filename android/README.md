@@ -1,14 +1,36 @@
-README
-======
+# react-native-honeywell-scanner-v2
 
-If you want to publish the lib as a maven dependency, follow these steps before publishing a new version to npm:
+This module is fork of react-native-honeywell-scanner.
 
-1. Be sure to have the Android [SDK](https://developer.android.com/studio/index.html) and [NDK](https://developer.android.com/ndk/guides/index.html) installed
-2. Be sure to have a `local.properties` file in this folder that points to the Android SDK and NDK
+## Getting started
+
+`$ npm install react-native-honeywell-scanner-v2 --save`
+
+## Usage
+```javascript
+import HoneywellScanner from 'react-native-honeywell-scanner-v2';
+
+...
+
+useEffect(() => {
+        if( HoneywellScanner.isCompatible ) {
+            HoneywellScanner.startReader().then((claimed) => {
+                console.log(claimed ? 'Barcode reader is claimed' : 'Barcode reader is busy');
+                HoneywellScanner.onBarcodeReadSuccess(event => {
+                    console.log('Received data', event.data);
+                });
+
+            });
+
+
+            return(
+                () => {
+                    HoneywellScanner.stopReader().then(() => {
+                        console.log("Freedom!!");
+                        HoneywellScanner.offBarcodeReadSuccess();
+                    });
+                }
+            )
+        }
+    }, []);
 ```
-ndk.dir=/Users/{username}/Library/Android/sdk/ndk-bundle
-sdk.dir=/Users/{username}/Library/Android/sdk
-```
-3. Delete the `maven` folder
-4. Run `./gradlew installArchives`
-5. Verify that latest set of generated files is in the maven folder with the correct version number

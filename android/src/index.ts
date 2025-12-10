@@ -1,4 +1,4 @@
-import { NativeModules, NativeEventEmitter, EmitterSubscription } from 'react-native';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 
 const { HoneywellScanner } = NativeModules;
 
@@ -10,17 +10,17 @@ const { HoneywellScanner } = NativeModules;
 
 const barcodeReaderEmitter = new NativeEventEmitter(HoneywellScanner);
 
-let subscriptionBarcodeReadSuccess: EmitterSubscription | null = null;
-let subscriptionBarcodeReadFail: EmitterSubscription | null = null;
+var subscriptionBarcodeReadSuccess = null;
+var subscriptionBarcodeReadFail = null;
 
-HoneywellScanner.onBarcodeReadSuccess = (handler: (event: any) => void) =>
+HoneywellScanner.onBarcodeReadSuccess = (handler) =>
 {
     subscriptionBarcodeReadSuccess?.remove();
     subscriptionBarcodeReadSuccess = null;
     subscriptionBarcodeReadSuccess = barcodeReaderEmitter.addListener(HoneywellScanner.BARCODE_READ_SUCCESS, handler);
 }
 
-HoneywellScanner.onBarcodeReadFail = (handler: (event: any) => void) =>
+HoneywellScanner.onBarcodeReadFail = (handler) =>
 {
     subscriptionBarcodeReadFail?.remove();
     subscriptionBarcodeReadFail = null;

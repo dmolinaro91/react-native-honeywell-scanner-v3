@@ -1,7 +1,7 @@
 {
 	"name": "react-native-honeywell-scanner-v3",
 	"title": "React Native Honeywell Scanner-v3",
-	"version": "1.1.6",
+	"version": "1.1.7",
 	"description": "Bridge to use the Honeywell scanner fixed",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",

@@ -102,10 +102,26 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
                         e.printStackTrace();
                     } catch (IllegalStateException e) {
                         isReaderActive = false;
+                        if (reader != null) {
+                            try { reader.close(); } catch (Exception ex) {}
+                            reader = null;
+                        }
+                        if (manager != null) {
+                            try { manager.close(); } catch (Exception ex) {}
+                            manager = null;
+                        }
                         promise.resolve(false);
                         e.printStackTrace();
                     } catch (Exception e) {
                         isReaderActive = false;
+                        if (reader != null) {
+                            try { reader.close(); } catch (Exception ex) {}
+                            reader = null;
+                        }
+                        if (manager != null) {
+                            try { manager.close(); } catch (Exception ex) {}
+                            manager = null;
+                        }
                         promise.resolve(false);
                         e.printStackTrace();
                     }

@@ -1,5 +1,10 @@
 package com.ami3go.honeywellscannerinterface;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
 
@@ -79,14 +84,30 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
             return;
         }
 
-        AidcManager.create(reactContext, new CreatedCallback() {
+        // Android 12+ (API 31+) requiere que registerReceiver especifique si el receiver
+        // es exportado o no. El SDK de Honeywell AIDC no hace esto, lo que provoca
+        // IllegalArgumentException en addBarcodeListener. Usamos un ContextWrapper que
+        // inyecta RECEIVER_NOT_EXPORTED automaticamente para solucionar este problema.
+        Context contextToUse;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            contextToUse = new ContextWrapper(reactContext) {
+                @Override
+                public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+                    return super.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+                }
+            };
+        } else {
+            contextToUse = reactContext;
+        }
+
+        AidcManager.create(contextToUse, new CreatedCallback() {
             @Override
             public void onCreated(AidcManager aidcManager) {
                 manager = aidcManager;
                 reader = manager.createBarcodeReader();
                 if (reader != null) {
-                    reader.addBarcodeListener(HoneywellScannerModule.this);
                     try {
+                        reader.addBarcodeListener(HoneywellScannerModule.this);
                         reader.claim();
                         reader.setProperty(BarcodeReader.PROPERTY_EAN_8_ENABLED, true);
                         reader.setProperty(BarcodeReader.PROPERTY_EAN_8_CHECK_DIGIT_TRANSMIT_ENABLED, true);
@@ -96,6 +117,19 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
                         reader.setProperty(BarcodeReader.PROPERTY_EAN_13_FIVE_CHAR_ADDENDA_ENABLED, true);
                         isReaderActive = true;
                         promise.resolve(true);
+                    } catch (IllegalArgumentException e) {
+                        Log.e(HoneyWellTAG, "addBarcodeListener fallo (posible problema Android 12+): " + e.getMessage());
+                        isReaderActive = false;
+                        if (reader != null) {
+                            try { reader.close(); } catch (Exception ex) {}
+                            reader = null;
+                        }
+                        if (manager != null) {
+                            try { manager.close(); } catch (Exception ex) {}
+                            manager = null;
+                        }
+                        promise.resolve(false);
+                        e.printStackTrace();
                     } catch (ScannerUnavailableException | UnsupportedPropertyException e) {
                         isReaderActive = false;
                         promise.resolve(false);

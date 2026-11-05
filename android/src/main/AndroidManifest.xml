@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.ami3go.honeywellscannerinterface">
     <uses-permission android:name="com.honeywell.decode.permission.DECODE" />
+
+    <!-- Android 11+ (targetSdk >= 30): AidcManager.create hace bindService al servicio de Honeywell.
+         Sin declarar el paquete aca, el servicio puede no ser visible y onCreated nunca llega. -->
+    <queries>
+        <package android:name="com.intermec.datacollectionservice" />
+    </queries>
 </manifest>
